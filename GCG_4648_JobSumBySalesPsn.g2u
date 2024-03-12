@@ -1,0 +1,398 @@
+Program.Sub.ScreenSU.Start
+Gui.fJobSum..Create
+Gui.fJobSum..Caption("Job Cost Summary By  Salesperson")
+Gui.fJobSum..Size(5415,4335)
+Gui.fJobSum..MinX(0)
+Gui.fJobSum..MinY(0)
+Gui.fJobSum..Position(0,0)
+Gui.fJobSum..BackColor(-2147483633)
+Gui.fJobSum..MousePointer(0)
+Gui.fJobSum..Event(UnLoad,fJobSum_UnLoad)
+Gui.fJobSum.dtpFrom.Create(DatePicker)
+Gui.fJobSum.dtpFrom.Size(1935,285)
+Gui.fJobSum.dtpFrom.Position(105,390)
+Gui.fJobSum.dtpTo.Create(DatePicker)
+Gui.fJobSum.dtpTo.Size(1935,285)
+Gui.fJobSum.dtpTo.Position(3210,390)
+Gui.fJobSum.FromDate.Create(Label,"From Date",True,1935,255,0,90,120,True,0,"Arial",8,-2147483633,0)
+Gui.fJobSum.ToDate.Create(Label,"To Date",True,1935,255,0,3225,120,True,0,"Arial",8,-2147483633,0)
+Gui.fJobSum.lvwSlRep.Create(ListView)
+Gui.fJobSum.lvwSlRep.Size(1935,2145)
+Gui.fJobSum.lvwSlRep.Position(105,990)
+Gui.fJobSum.lvwSlRep.View(3)
+Gui.fJobSum.lvwSlRep.AddListViewColumn("Sales Rep List",1600,0)
+Gui.fJobSum.lvwSlRep.BorderStyle(1)
+Gui.fJobSum.cmdGenRep.Create(Button)
+Gui.fJobSum.cmdGenRep.Size(1935,375)
+Gui.fJobSum.cmdGenRep.Position(120,3390)
+Gui.fJobSum.cmdGenRep.Caption("Generate Report")
+Gui.fJobSum.cmdGenRep.Event(Click,cmdGenRep_Click)
+Gui.fJobSum.cmdPopLst.Create(Button)
+Gui.fJobSum.cmdPopLst.Size(525,375)
+Gui.fJobSum.cmdPopLst.Position(2385,1515)
+Gui.fJobSum.cmdPopLst.Caption(">>")
+Gui.fJobSum.cmdPopLst.Event(Click,cmdPopLst_Click)
+Gui.fJobSum.cmdUnPopLst.Create(Button)
+Gui.fJobSum.cmdUnPopLst.Size(525,375)
+Gui.fJobSum.cmdUnPopLst.Position(2370,2070)
+Gui.fJobSum.cmdUnPopLst.Caption("<<")
+Gui.fJobSum.cmdUnPopLst.Event(Click,cmdUnPopLst_Click)
+Gui.fJobSum.lvwPopSlRep.Create(ListView)
+Gui.fJobSum.lvwPopSlRep.Size(1935,2145)
+Gui.fJobSum.lvwPopSlRep.Position(3210,1035)
+Gui.fJobSum.lvwPopSlRep.View(3)
+Gui.fJobSum.lvwPopSlRep.Multiselect(True)
+Gui.fJobSum.lvwPopSlRep.AddListViewColumn("Selected Sales Rep",1600,0)
+Gui.fJobSum.lvwPopSlRep.BorderStyle(1)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+f.Intrinsic.Control.try
+
+f.ODBC.Connection!conx.openconnection(v.Ambient.PDSN,v.Ambient.PUser,v.Ambient.PPass)
+gui.fJobSum.lvwSlRep.ClearItems
+f.ODBC.Connection!conx.openlocalrecordsetro("rstslrep","select RTRIM(Name) as Name from V_SALESPERSONS")
+f.intrinsic.control.DoUntil(v.ODBC.conx!rstslrep.EOF,=,true)
+	
+	gui.fJobSum.lvwSlRep.AddListItem(v.ODBC.conx!rstslrep.FieldVal!Name,v.ODBC.conx!rstslrep.FieldVal!Name)
+	f.ODBC.conx!rstslrep.MoveNext
+f.intrinsic.Control.Loop
+gui.fJobSum..Show
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.cmdPopLst_Click.Start
+v.Local.sLstvw1.Declare(string)
+v.Local.sLstvw2.Declare(string)
+v.Local.iCount.Declare(Long)
+v.Local.bCheck.Declare(Boolean)
+f.Intrinsic.Control.Try
+
+gui.fJobSum.lvwSlRep.RetrieveSelectedListitems(v.Local.sLstvw1)
+
+f.Data.DataTable.CreateFromString("PopDT",v.Local.sLstvw1,"Name","string","@!@","*!*")
+
+gui.fJobSum.lvwPopSlRep.RetrieveAllListItems(v.Local.sLstvw2)
+
+
+f.Intrinsic.Control.for(v.Local.iCount,0,v.DataTable.PopDT.RowCount--,1)
+	f.Intrinsic.String.IsInString(v.Local.sLstvw2,v.DataTable.PopDT(v.Local.iCount).Name!fieldval,True,v.Local.bCheck)
+	f.Intrinsic.Control.If(v.Local.bCheck,<>,true)
+		gui.fJobSum.lvwPopSlRep.AddListItem(v.DataTable.PopDT(v.Local.iCount).Name!fieldval,v.DataTable.PopDT(v.Local.iCount).Name!fieldval)
+	f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.Next(v.Local.iCount)
+f.Data.DataTable.Close("PopDT")
+f.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+
+Program.Sub.cmdPopLst_Click.End
+
+Program.Sub.cmdUnPopLst_Click.Start
+v.Local.sLstvw1.Declare(string)
+v.Local.sLstvw2.Declare(string)
+v.Local.iCount.Declare(Long)
+v.Local.bCheck.Declare(Boolean)
+gui.fJobSum.lvwPopSlRep.RetrieveAllListItems(v.Local.sLstvw1)
+gui.fJobSum.lvwpopSlRep.RetrieveSelectedListitems(v.Local.sLstVw2)
+f.Intrinsic.Control.If(v.Local.sLstvw2,=,"***NORETURN***")
+	f.Intrinsic.Control.ExitSub
+f.Intrinsic.Control.EndIf
+gui.fJobSum.lvwPopSlRep.RetrieveAllListItems(v.Local.sLstvw1)
+f.Data.DataTable.CreateFromString("UnPopDT",v.Local.sLstvw2,"Name","string","@!@","*!*")
+
+
+f.Intrinsic.Control.For(v.Local.iCount,0,v.DataTable.UnPopDT.RowCount--,1)
+	f.Intrinsic.String.Replace(v.Local.sLstvw1,v.DataTable.UnPopDT(v.Local.iCount).Name!fieldval,"%",v.Local.sLstvw1)
+f.Intrinsic.Control.Next(v.Local.iCount)
+f.Data.DataTable.Close("UnPopDT")
+f.Intrinsic.String.Replace(v.Local.sLstvw1,"*!*%*!*","*!*",v.Local.sLstvw1)
+f.Intrinsic.String.Replace(v.Local.sLstvw1,"*!*%","",v.Local.sLstvw1)
+f.Intrinsic.String.Replace(v.Local.sLstvw1,"%*!*","",v.Local.sLstvw1)
+f.Intrinsic.String.Replace(v.Local.sLstvw1,"%","",v.Local.sLstvw1)
+gui.fJobSum.lvwPopSlRep.ClearItems
+f.Intrinsic.Control.If(v.Local.sLstvw1,<>,"")
+	f.Data.DataTable.CreateFromString("PopDT",v.Local.sLstvw1,"Name","string","@!@","*!*")
+	f.Intrinsic.Control.for(v.Local.iCount,0,v.DataTable.PopDT.RowCount--,1)
+			gui.fJobSum.lvwPopSlRep.AddListItem(v.DataTable.PopDT(v.Local.iCount).Name!fieldval,v.DataTable.PopDT(v.Local.iCount).Name!fieldval)
+	f.Intrinsic.Control.Next(v.Local.iCount)
+	f.Data.DataTable.Close("PopDT")
+f.Intrinsic.Control.EndIf
+f.Intrinsic.Control.ExitSub
+Program.Sub.cmdUnPopLst_Click.End
+
+Program.Sub.cmdGenRep_Click.Start
+f.Intrinsic.Control.Try
+gui.fJobSum..Enabled(false)
+
+v.Local.sLstvw1.Declare(string)
+v.Local.sSQL.Declare(string)
+v.Local.sSaleID.Declare(string)
+v.Local.sFromDt.Declare(string)
+v.Local.sToDt.Declare(string)
+v.Local.sOrdno.Declare(string)
+v.Local.sJob.Declare(string)
+v.Local.iRunID.Declare(string)
+v.Local.iLogID.Declare(string)
+v.Local.sMap.Declare(string)
+v.Local.sParam.Declare(string)
+v.Local.sParamVals.Declare(string)
+Function.Intrinsic.UI.InvokeWaitDialog( "Compiling data","Running PreProc" )
+F.Global.BI.GetRunID(v.Local.iRunID)
+F.Global.BI.StartLogging(v.Local.iRunID, -1, -1, "Job Summary by sales person", v.Local.iLogID)
+
+'check for valid from and to dates
+f.Intrinsic.Control.If(v.Screen.fJobSum!dtpFrom.Value,>,v.screen.fJobSum!dtpTo.value)
+	f.Intrinsic.UI.Msgbox("The 'from date' cannot be greater than the 'to date'.","Incorrect Date Range!")
+	gui.fJobSum..Enabled(true)
+	f.Intrinsic.Control.ExitSub
+F.Intrinsic.control.EndIf
+'check if salesrep has been selected
+gui.fJobSum.lvwPopSlRep.RetrieveAllListItems(v.Local.sLstvw1)
+f.Intrinsic.Control.If(v.Local.sLstvw1,=,"***NORETURN***")
+	f.Intrinsic.UI.Msgbox("At least one Sales Rep has to be populated in the Selected Sales Rep List view to generate a report.","No Sales Rep selected!")
+	gui.fJobSum..Enabled(true)
+	f.Intrinsic.Control.ExitSub
+f.Intrinsic.Control.EndIf
+
+f.data.Dictionary.CreateFromSQL("SaleRep","conx","Select RTRIM(Name) as Name ,ID from V_SALESPERSONS")
+f.Data.Dictionary.SetDefaultReturn("SaleRep","")
+
+f.Data.DataTable.CreateFromString("IDDT",v.Local.sLstvw1,"ID","string","@!@","*!*",true)
+
+'get sales rep ID and store in string for sql in query
+f.Data.DataTable.FillFromDictionary("IDDT","Salerep","ID")
+f.Data.Dictionary.Close(SaleRep)
+
+f.data.DataView.Create("IDDT","popDTvw",22)
+f.Data.DataView.ToString("IDDT","popDTvw","ID","*!*","','",v.Local.sSaleID)
+f.Data.DataView.close("IDDT","popDTvw")
+f.Data.datatable.Close("IDDT")
+f.Intrinsic.String.Build("'{0}'",v.Local.sSaleID,v.Local.sSaleID)
+
+v.Local.sFromDt.Set(v.Screen.fJobSum!dtpFrom.text)
+v.Local.stoDt.Set(v.Screen.fJobSum!dtpto.text)
+'ignore through ordhddict till next comment
+f.intrinsic.string.Build("select Order_No from V_ORDER_HEADER where date_order > '{0}' and date_order < '{1}'",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.ssql)
+
+f.Data.datatable.CreateFromSQL("ordhdDT","conx",v.Local.sSQL)
+f.data.DataView.Create("ordhdDT","ordhdvw",22)
+f.Data.DataView.ToString("ordhdDT","ordhdvw","order_no","*!*","','",v.Local.sOrdno)
+f.Data.DataView.Close("ordhdDT","ordhdvw")
+f.Data.datatable.Close("ordhdDT")
+f.Intrinsic.String.Build("'{0}'",v.Local.sOrdno,v.Local.sOrdno)
+
+f.intrinsic.string.Build("select distinct Order_No,Date_order from V_ORDER_HEADER where date_order > '{0}' and date_order < '{1}'",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.ssql)
+f.Data.Dictionary.CreateFromSQL("ordhddict","conx",v.Local.sSQL)
+f.Data.Dictionary.SetDefaultReturn("ordhddict","")
+
+
+f.Intrinsic.String.Build("select distinct Job from v_ORDER_TO_WO where order_no in (select distinct Order_No from V_ORDER_HEADER where date_order > '{0}' and date_order < '{1}')",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+'f.Intrinsic.String.Build("select distinct Job from v_ORDER_TO_WO where order_no in ({0})",v.Local.sOrdno,v.Local.sSQL)
+f.Data.DataTable.CreateFromSQL("JobFmOrdDT","conx",v.Local.sSQL)
+f.data.DataView.Create("JobFmOrdDT","JobFmOrdVW",22)
+f.Data.DataView.ToString("JobFmOrdDT","JobFmOrdVW","job","*!*","','",v.Local.sjob)
+f.Data.DataView.Close("JobFmOrdDT","JobFmOrdVW")
+f.Data.datatable.Close("JobFmOrdDT")
+f.Intrinsic.String.Build("'{0}'",v.Local.sjob,v.Local.sjob)
+'f.Intrinsic.control.If(v.Local.sJob,=,"''")
+'	f.Intrinsic.UI.Msgbox("There is no jobs associated with sales orders for the current selection")
+'	f.Data.Dictionary.Close("ordhddict")
+'	gui.fJobSum..Enabled(true)
+'	f.Intrinsic.Control.ExitSub
+'f.Intrinsic.Control.EndIf
+
+
+
+f.Intrinsic.String.Build("select distinct order_no,RTRIM(job) as JOB, RTRIM(' ') as DT_ORDER from v_ORDER_TO_WO where order_no in ({0})",v.Local.sOrdno,v.Local.sSQL)
+f.Data.DataTable.CreateFromSQL("JobFmOrdDT","conx",v.Local.sSQL)
+f.Data.DataTable.FillFromDictionary("JobFmOrdDT","ordhddict","order_no","DT_Order")
+f.Data.Dictionary.createfromdatatable("JobDtDict","JobFmOrdDT","Job", "DT_Order")
+f.Data.Dictionary.SetDefaultReturn("JobDtDict","")
+
+'create Data table for purchase orders that have been generated between selected dates
+f.Intrinsic.String.Build("Select RTRIM(Job) + '-' + RTRIM(suffix) as Job_suffix, QTY_ORDER, QTY_RECEIVED, COST, PURCHASE_ORDER,PART,RECORD_NO,FLAG_RECV_CLOSE from v_PO_LINES where purchase_order in (select purchase_order  from V_PO_HEADER where date_order > '{0}' and date_order < '{1}') ",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+''f.Intrinsic.String.Build("Select RTRIM(Job) + '-' + RTRIM(suffix) as Job_suffix, QTY_ORDER, QTY_RECEIVED, COST, PURCHASE_ORDER,PART,RECORD_NO,FLAG_RECV_CLOSE from v_PO_LINES where purchase_order in (select purchase_order  from V_PO_HEADER where date_order > '{0}' and date_order < '{1}') and Job in (select distinct Job from v_ORDER_TO_WO where order_no in (select distinct Order_No from V_ORDER_HEADER where date_order > '{2}' and date_order < '{3}'))",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+'f.Intrinsic.String.Build("Select RTRIM(Job) + '-' + RTRIM(suffix) as Job_suffix, QTY_ORDER, QTY_RECEIVED, COST, PURCHASE_ORDER,PART,RECORD_NO,FLAG_RECV_CLOSE from v_PO_LINES where Job in ({0})",v.Local.sJob,v.Local.sSQL)
+f.Data.DataTable.CreateFromSQL("PODT","conx",v.local.sSQL)
+
+
+
+'create Data table for jobs that have purchase orders that have been generated between selected dates or jobs that have anything charged between selected dates
+f.Intrinsic.String.Build("select RTRIM(Job) as Job, RTRIM(SUFFIX) as Suffix, RTRIM(Job) + '-' + RTRIM(suffix) as Job_suffix, Description,RTRIM(' ') as amt_material,Num_Hours,amt_labor,Amt_price_per_unit, qty_customer,customer,salesperson from job_header where salesperson in ({0}) and (job_suffix in (select RTRIM(Job) + '-' + RTRIM(suffix) as Job_suffix from v_PO_LINES where purchase_order in (select purchase_order  from V_PO_HEADER where date_order > '{1}' and date_order < '{2}')) or job_suffix in(select RTRIM(JOB) + '-' + RTRIM(SUFFIX) as JOB_SUFFIX from V_JOB_DETAIL where charge_date > '{3}' and charge_date < '{4}'))",v.Local.sSaleID,v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+'f.Intrinsic.String.Build("select RTRIM(Job) as Job, RTRIM(SUFFIX) as Suffix, RTRIM(Job) + '-' + RTRIM(suffix) as Job_suffix, Description,RTRIM(' ') as amt_material,Num_Hours, amt_labor,Amt_price_per_unit, qty_customer,customer,salesperson from job_header where job in ({0}) and salesperson in ({1})",v.Local.sJob,v.Local.sSaleID,v.Local.sSQL)
+f.Data.DataTable.CreatefromSQL("JOBDT","conx",v.Local.sSQL)
+'f.Data.DataTable.addcolumn("JOBDT","DATE_ORDER","date")
+'f.Data.DataTable.FillFromDictionary("JOBDT","JobDtDict","job","DATE_ORDER")
+
+
+f.Intrinsic.String.Build("Select RTRIM(Job) + '-' + RTRIM(suffix) as Job_suffix, sum((QTY_ORDER-QTY_RECEIVED)*COST) as OpenCommitted from v_PO_LINES where purchase_order in (select purchase_order  from V_PO_HEADER where date_order > '{0}' and date_order < '{1}') group by Job_suffix ",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+f.Data.Dictionary.CreateFromSQL("OCDict","conx",v.local.sSQL)
+f.Data.Dictionary.SetDefaultReturn("OCDict",0)
+f.Data.DataTable.addcolumn("JOBDT","OPEN_COMMITTED","Float")
+f.Data.DataTable.FillFromDictionary("JOBDT","OCDict","Job_suffix","OPEN_COMMITTED")
+
+'create dictionary to get the labor costs for each charge between selected dates.
+f.Intrinsic.String.Build("select RTRIM(Job) + '-' + RTRIM(suffix) as Job_suffix, sum(AMOUNT_LABOR) as amt_material from V_JOB_DETAIL  where LMO in ('O','M') and charge_date > '{0}' and charge_date < '{1}'  group by Job_suffix",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+f.data.Dictionary.CreateFromSQL("amtmatdict","conx",v.Local.sSQL)
+f.Data.Dictionary.SetDefaultReturn("amtmatdict",0)
+f.Data.DataTable.FillFromDictionary("JOBDT","amtmatdict","Job_suffix","amt_material")
+
+f.Data.Dictionary.Close("amtmatdict")
+
+
+
+'engg hours charged between selected dates
+f.intrinsic.string.build("select RTRIM(JOB) + '-' + RTRIM(SUFFIX) as JOB_SUFFIX, SUM(HOURS_WORKED) from V_JOB_DETAIL where DEPT_EMP = 'ENGN' AND FLAG_INDIRECT = 'D' and charge_date > '{0}' and charge_date < '{1}' GROUP BY JOB_SUFFIX",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+'f.intrinsic.string.build("select RTRIM(JOB) + '-' + RTRIM(SUFFIX) as JOB_SUFFIX, SUM(HOURS_WORKED) from V_JOB_DETAIL where charge_date > '{0}' and charge_date < '{1}' and JOB IN (select distinct Job from v_ORDER_TO_WO where order_no in (select distinct Order_No from V_ORDER_HEADER where date_order > '{2}' and date_order < '{3}')) AND (V_JOB_DETAIL.DEPT_EMP = 'ENGN' AND V_JOB_DETAIL.FLAG_INDIRECT = 'D') GROUP BY JOB_SUFFIX",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+F.data.Dictionary.CreateFromSQL("tempdict","conx",v.Local.sSQL)
+f.Data.Dictionary.SetDefaultReturn("tempdict",0)
+f.Data.DataTable.AddColumn("JOBDT","Engn_hours","string")
+f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","Engn_hours")
+f.Data.Dictionary.Close("tempdict")
+
+'Prod hours charged between selected dates
+f.intrinsic.string.build("select RTRIM(JOB) + '-' + RTRIM(SUFFIX) as JOB_SUFFIX, SUM(HOURS_WORKED) from V_JOB_DETAIL where  DEPT_EMP <> 'ENGN' and LMO = 'L' and charge_date > '{0}' and charge_date < '{1}' GROUP BY JOB_SUFFIX",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+'f.intrinsic.string.build("select RTRIM(JOB) + '-' + RTRIM(SUFFIX) as JOB_SUFFIX, SUM(HOURS_WORKED) from V_JOB_DETAIL where charge_date > '{0}' and charge_date < '{1}' and JOB IN (select distinct Job from v_ORDER_TO_WO where order_no in (select distinct Order_No from V_ORDER_HEADER where date_order > '{2}' and date_order < '{3}')) AND (V_JOB_DETAIL.DEPT_EMP <> 'ENGN' OR V_JOB_DETAIL.FLAG_INDIRECT <> '') GROUP BY JOB_SUFFIX",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+F.data.Dictionary.CreateFromSQL("tempdict","conx",v.Local.sSQL)
+f.Data.Dictionary.SetDefaultReturn("tempdict",0)
+f.Data.DataTable.AddColumn("JOBDT","Prod_hours","string")
+f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","Prod_hours")
+f.Data.Dictionary.Close("tempdict")
+
+'f.intrinsic.string.build("select JOB, SUM(HOURS_WORKED) from V_JOB_DETAIL where JOB IN (select distinct Job from v_ORDER_TO_WO where order_no in (select distinct Order_No from V_ORDER_HEADER where date_order > '{0}' and date_order < '{1}')) AND (V_JOB_DETAIL.DEPT_EMP = 'ENGN' AND V_JOB_DETAIL.FLAG_INDIRECT = 'D') GROUP BY JOB",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+'F.data.Dictionary.CreateFromSQL("tempdict","conx",v.Local.sSQL)
+'f.Data.Dictionary.SetDefaultReturn("tempdict",0)
+'f.Data.DataTable.AddColumn("JOBDT","labor_engg","string")
+'f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","labor_engg")
+'f.Data.Dictionary.Close("tempdict")
+
+'f.intrinsic.string.build("select JOB, SUM(HOURS_WORKED) from V_JOB_DETAIL where JOB IN (select distinct Job from v_ORDER_TO_WO where order_no in (select distinct Order_No from V_ORDER_HEADER where date_order > '{0}' and date_order < '{1}')) AND (V_JOB_DETAIL.DEPT_EMP <> 'ENGN' OR V_JOB_DETAIL.FLAG_INDIRECT <> '') GROUP BY JOB",v.Local.sFromDt.PervasiveDate,v.Local.sToDt.PervasiveDate,v.Local.sSQL)
+'F.data.Dictionary.CreateFromSQL("tempdict","conx",v.Local.sSQL)
+'f.Data.Dictionary.SetDefaultReturn("tempdict",0)
+'f.Data.DataTable.AddColumn("JOBDT","Prod_hours","string")
+'f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","Prod_hours")
+'f.Data.Dictionary.Close("tempdict")
+
+f.data.Dictionary.CreateFromSQL("CUST","conx","Select CUSTOMER, RTRIM(NAME_CUSTOMER) as NAME_CUSTOMER from V_CUSTOMER_MASTER")
+f.Data.Dictionary.SetDefaultReturn("CUST","")
+f.Data.DataTable.addcolumn("JOBDT","NAME_CUSTOMER","string")
+f.Data.DataTable.FillFromDictionary("JOBDT","CUST","CUSTOMER","NAME_CUSTOMER")
+
+f.data.Dictionary.CreateFromSQL("SaleRep","conx","Select ID, RTRIM(Name) as Name from V_SALESPERSONS")
+f.Data.Dictionary.SetDefaultReturn("SaleRep","")
+f.Data.DataTable.addcolumn("JOBDT","Name_N","string")
+f.Data.DataTable.FillFromDictionary("JOBDT","SaleRep","salesperson","Name_N")
+
+
+'fill values from Purchase order data table to job data table by creating dictionary from data table
+f.Data.Dictionary.createfromdatatable("tempdict","PODT","Job_suffix", "QTY_ORDER")
+f.Data.Dictionary.SetDefaultReturn("tempdict",0)
+f.Data.DataTable.addcolumn("JOBDT","QTY_ORDER","Float")
+f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","QTY_ORDER")
+f.Data.Dictionary.Close("tempdict")
+
+f.Data.Dictionary.createfromdatatable("tempdict","PODT","Job_suffix", "QTY_RECEIVED")
+f.Data.Dictionary.SetDefaultReturn("tempdict",0)
+f.Data.DataTable.addcolumn("JOBDT","QTY_RECEIVED","Float")
+f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","QTY_RECEIVED")
+f.Data.Dictionary.Close("tempdict")
+
+f.Data.Dictionary.createfromdatatable("tempdict","PODT","Job_suffix", "COST")
+f.Data.Dictionary.SetDefaultReturn("tempdict",0)
+f.Data.DataTable.addcolumn("JOBDT","COST","Float")
+f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","COST")
+f.Data.Dictionary.Close("tempdict")
+
+f.Data.Dictionary.createfromdatatable("tempdict","PODT","Job_suffix", "PURCHASE_ORDER")
+f.Data.Dictionary.SetDefaultReturn("tempdict","")
+f.Data.DataTable.addcolumn("JOBDT","PURCHASE_ORDER","string")
+f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","PURCHASE_ORDER")
+f.Data.Dictionary.Close("tempdict")
+
+f.Data.Dictionary.createfromdatatable("tempdict","PODT","Job_suffix", "PART")
+f.Data.Dictionary.SetDefaultReturn("tempdict","")
+f.Data.DataTable.addcolumn("JOBDT","PART","string")
+f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","PART")
+f.Data.Dictionary.Close("tempdict")
+
+f.Data.Dictionary.createfromdatatable("tempdict","PODT","Job_suffix", "RECORD_NO")
+f.Data.Dictionary.SetDefaultReturn("tempdict","")
+f.Data.DataTable.addcolumn("JOBDT","RECORD_NO","string")
+f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","RECORD_NO")
+f.Data.Dictionary.Close("tempdict")
+
+f.Data.Dictionary.createfromdatatable("tempdict","PODT","Job_suffix", "FLAG_RECV_CLOSE")
+f.Data.Dictionary.SetDefaultReturn("tempdict","")
+f.Data.DataTable.addcolumn("JOBDT","FLAG_RECV_CLOSE","string")
+f.Data.DataTable.FillFromDictionary("JOBDT","tempdict","Job_suffix","FLAG_RECV_CLOSE")
+f.Data.Dictionary.Close("tempdict")
+
+f.Data.DataTable.addcolumn("JOBDT","RUN_ID","long")
+f.Data.DataTable.SetValue("JOBDT",-1,"RUN_ID",v.Local.iRunID)
+
+
+'v.Local.sMap.Set("RUN_ID@!@RUN_ID*!*JOB@!@JOB*!*SUFFIX@!@SUFFIX*!*DESCRIPTION@!@DESCRIPTION*!*AMT_MATERIAL@!@AMT_MATERIAL*!*NUM_HOURS@!@NUM_HOURS*!*AMT_LABOR@!@AMT_LABOR*!*AMT_PRICE_PER_UNIT@!@AMT_PRICE_PER_UNIT*!*QTY_CUSTOMER@!@QTY_CUSTOMER*!*QTY_ORDER@!@QTY_ORDER*!*QTY_ORDER@!@QTY_ORDER*!*COST@!@COST*!*PURCHASE_ORDER@!@PURCHASE_ORDER*!*PART@!@PART*!*NAME_CUSTOMER@!@NAME_CUSTOMER*!*FLAG_RECV_CLOSE@!@FLAG_RECV_CLOSE*!*NAME@!@NAME*!*DATE_ORDER@!@DATE_ORDER*!*ENGN_HOURS@!@ENGN_HOURS*!*PROD_HOURS@!@PROD_HOURS*!*RECORD_NO@!@RECORD_NO")
+v.Local.sMap.Set("RUN_ID@!@RUN_ID*!*JOB@!@JOB*!*SUFFIX@!@SUFFIX*!*DESCRIPTION@!@DESCRIPTION*!*AMT_MATERIAL@!@AMT_MATERIAL*!*NUM_HOURS@!@NUM_HOURS*!*AMT_LABOR@!@AMT_LABOR*!*AMT_PRICE_PER_UNIT@!@AMT_PRICE_PER_UNIT*!*QTY_CUSTOMER@!@QTY_CUSTOMER*!*QTY_ORDER@!@QTY_ORDER*!*QTY_RECEIVED@!@QTY_RECEIVED*!*COST@!@COST*!*PURCHASE_ORDER@!@PURCHASE_ORDER*!*PART@!@PART*!*NAME_CUSTOMER@!@NAME_CUSTOMER*!*FLAG_RECV_CLOSE@!@FLAG_RECV_CLOSE*!*NAME_N@!@NAME_N*!*ENGN_HOURS@!@ENGN_HOURS*!*PROD_HOURS@!@PROD_HOURS*!*RECORD_NO@!@RECORD_NO*!*OPEN_COMMITTED@!@OPEN_COMMITTED")
+
+
+
+'save to custom database
+F.data.DataTable.SaveToDB("JOBDT","conx","GCG_4648_JOBSUM","RUN_ID",128,V.Local.sMap)
+
+f.data.dictionary.Close("CUST")
+
+f.data.dictionary.Close("SaleRep")
+f.data.dictionary.Close("ordhddict")
+f.data.dictionary.Close("JobDtDict")
+f.data.dictionary.Close("OCDict")
+f.data.datatable.Close("PODT")
+
+f.data.datatable.Close("JOBDT")
+
+Function.Intrinsic.UI.CloseWaitDialog
+Function.Intrinsic.UI.InvokeWaitDialog( "Saving to DB","Running PreProc" )
+
+F.Global.BI.StopLogging(v.Local.iLogID)
+
+f.Intrinsic.String.Build("{0}*!*{1}",v.Local.sFromDt,v.Local.sToDt,v.Local.sParamVals)
+
+Function.Intrinsic.UI.CloseWaitDialog
+
+Function.Intrinsic.UI.InvokeWaitDialog( "Generating Report","Running PreProc")
+Function.Intrinsic.UI.CloseWaitDialog
+'generate report
+F.Global.BI.RunReportPreProcessor(v.Local.iRunID, v.Local.iLogID, "Start Date*!*End Date", v.Local.sParamVals, "", 16, true, "", -1, "", -1, "","", v.Local.iLogID)
+
+gui.fJobSum..Enabled(true)
+
+f.Intrinsic.Control.ExitSub
+
+f.Intrinsic.Control.catch
+f.Intrinsic.Control.CallSub(catching,"sub",v.Ambient.CurrentSubroutine,"errorno",v.Ambient.ErrorNumber,"errordesc",v.Ambient.ErrorDescription)
+f.Intrinsic.Control.EndTry
+
+Program.Sub.cmdGenRep_Click.End
+
+Program.Sub.fJobSum_UnLoad.Start
+f.ODBC.Connection!conx.Close
+f.Intrinsic.Control.End
+Program.Sub.fJobSum_UnLoad.End
+
+Program.Sub.catching.Start
+v.Local.sError.declare(string)
+Function.Intrinsic.String.Concat(v.Ambient.Now,": Project: GCG_4648_JobSumBySalesPsn.g2u ",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",v.Args.sub,V.Ambient.NewLine,"Error Occurred ",V.Args.errorno," with description ",V.args.errordesc,V.Local.sError)
+f.Intrinsic.UI.Msgbox(v.Local.sError)
+
+f.Intrinsic.Control.CallSub(fJobSum_UnLoad)
+
+
+Program.Sub.catching.End
